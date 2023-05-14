@@ -17,7 +17,11 @@ class ContactInfoModelSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         instance = getattr(self, 'instance', None)
+        partial = getattr(self, 'partial', None)
         mobile_number = attrs.get("mobile_number")
-        if ContactInfo.objects.filter(Q(mobile_number=mobile_number)).exclude(id=instance.id).exists():
+
+        if partial and ContactInfo.objects.filter(Q(mobile_number=mobile_number)).exclude(id=instance.id).exists():
+            raise serializers.ValidationError({"mobile_number": "Contact with this phone number already exits"})
+        if not partial and ContactInfo.objects.filter(Q(mobile_number=mobile_number)).exists():
             raise serializers.ValidationError({"mobile_number": "Contact with this phone number already exits"})
         return attrs
